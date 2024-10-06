@@ -1,0 +1,5 @@
+spring:
+  liquibase:
+    change-log: classpath:migrations/db.changelog-master.yaml
+  application:
+    name: cloud-service
