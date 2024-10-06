@@ -3,3 +3,6 @@ spring:
     change-log: classpath:migrations/db.changelog-master.yaml
   application:
     name: cloud-service
+  jpa:
+    hibernate:
+      ddl-auto: none
