@@ -33,7 +33,13 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Column(name = "bucket_name", nullable = false)
+    private String bucketName;
+
+    @Column(name = "current_workspace_name")
+    private String currentWorkspaceName;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Workspace> workspaces;
 
     @PrePersist

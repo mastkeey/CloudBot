@@ -21,5 +21,6 @@
     <modules>
         <module>bot-service</module>
         <module>cloud-service</module>
+        <module>api-contract</module>
     </modules>
 </project>

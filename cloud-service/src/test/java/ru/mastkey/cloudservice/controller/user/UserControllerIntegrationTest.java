@@ -3,11 +3,11 @@ package ru.mastkey.cloudservice.controller.user;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.mastkey.cloudservice.controller.dto.CreateUserRequest;
-import ru.mastkey.cloudservice.controller.dto.UserResponse;
 import ru.mastkey.cloudservice.entity.User;
-import ru.mastkey.cloudservice.exception.response.ErrorResponse;
 import ru.mastkey.cloudservice.support.IntegrationTestBase;
+import ru.mastkey.model.CreateUserRequest;
+import ru.mastkey.model.ErrorResponse;
+import ru.mastkey.model.UserResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,10 +22,11 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
         ResponseEntity<UserResponse> response = testRestTemplate
                 .postForEntity(BASE_URL, request, UserResponse.class);
 
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
         var user = userRepository.findAll().get(0);
         var body = response.getBody();
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(user.getTelegramUserId()).isEqualTo(request.getTelegramUserId());
         assertThat(user.getChatId()).isEqualTo(request.getChatId());
         assertThat(user.getCreatedAt()).isNotNull();
@@ -49,8 +50,47 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
                 .postForEntity(BASE_URL, request, ErrorResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        assertThat(response.getBody().getMessage()).contains(String.format("Пользователь с id %s уже существует.", request.getTelegramUserId()));
+        assertThat(response.getBody().getMessage()).contains(String.format("User with id %s already exist", request.getTelegramUserId()));
     }
+
+    @Test
+    void changeCurrentWorkspaceUserNotFountTest() {
+        var testId = 123123L;
+
+        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceName=%s",
+                testId,
+                "test");
+
+        ResponseEntity<ErrorResponse> response = testRestTemplate
+                .postForEntity(urlWithParams, null, ErrorResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        var error = response.getBody();
+
+        assertThat(error.getMessage()).isEqualTo(String.format("User with id %s not found", testId));
+    }
+
+    @Test
+    void changeCurrentWorkspaceWorkspaceNoFountTest() {
+        var testId = createUser().getTelegramUserId();
+        var testWorkspaceName = "test";
+
+        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceName=%s",
+                testId,
+                testWorkspaceName);
+
+
+        ResponseEntity<ErrorResponse> response = testRestTemplate
+                .postForEntity(urlWithParams, null, ErrorResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        var error = response.getBody();
+
+        assertThat(error.getMessage()).isEqualTo(String.format("User with id %s does not have a Workspace named %s", testId, testWorkspaceName));
+    }
+
 
     public CreateUserRequest createCreateUserRequest() {
         var request = new CreateUserRequest();

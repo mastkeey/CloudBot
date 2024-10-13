@@ -5,8 +5,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.mastkey.cloudservice.exception.ServiceException;
-import ru.mastkey.cloudservice.exception.response.ErrorResponse;
 import ru.mastkey.cloudservice.util.ResponseFactory;
+import ru.mastkey.model.ErrorResponse;
 
 @ControllerAdvice
 public class CustomExceptionHandler {

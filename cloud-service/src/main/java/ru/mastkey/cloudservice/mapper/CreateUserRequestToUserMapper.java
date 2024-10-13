@@ -1,14 +1,23 @@
 package ru.mastkey.cloudservice.mapper;
 
+import org.mapstruct.BeforeMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.springframework.core.convert.converter.Converter;
-import ru.mastkey.cloudservice.controller.dto.CreateUserRequest;
+import ru.mastkey.cloudservice.configuration.MapperConfiguration;
 import ru.mastkey.cloudservice.entity.User;
+import ru.mastkey.model.CreateUserRequest;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(config = MapperConfiguration.class)
 public interface CreateUserRequestToUserMapper extends Converter<CreateUserRequest, User> {
 
+    @BeforeMapping
+    default void beforeMapping(@MappingTarget User user,  CreateUserRequest source) {
+        user.setBucketName(String.valueOf(source.getTelegramUserId()));
+    }
+
     @Override
+    @Mapping(target = "currentWorkspaceName", source = "username")
     User convert(CreateUserRequest source);
 }
