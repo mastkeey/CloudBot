@@ -13,6 +13,7 @@ CREATE TABLE workspace
 (
     id         UUID PRIMARY KEY,
     user_id    BIGINT    NOT NULL,
+    name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id) REFERENCES tg_user (id)
 );

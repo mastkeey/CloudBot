@@ -1,0 +1,11 @@
+spring:
+  liquibase:
+    enabled: true
+    contexts: test
+    change-log: migrations/db.changelog-master.yaml
+logging:
+  level:
+    root: INFO
+    ru.mastkey.cloudservice: DEBUG
+    org.springframework: INFO
+    org.hibernate: INFO

@@ -16,8 +16,14 @@ public class PostgreSQLInitializer implements ApplicationContextInitializer<Conf
     }
 
     public void initialize(ConfigurableApplicationContext context) {
-        ((PostgreSQLContainer)((PostgreSQLContainer)CONTAINER.withNetwork(NETWORK)).withUrlParam("prepareThreshold", "0")).start();
-        TestPropertyValues.of(new String[]{"spring.datasource.url=" + CONTAINER.getJdbcUrl(), "spring.datasource.username=" + CONTAINER.getUsername(), "spring.datasource.password=" + CONTAINER.getPassword()}).applyTo(context.getEnvironment());
+        ((PostgreSQLContainer) ((PostgreSQLContainer) CONTAINER.withNetwork(NETWORK)).withUrlParam("prepareThreshold", "0")).start();
+        TestPropertyValues.of(new String[]{
+                "spring.datasource.url=" + CONTAINER.getJdbcUrl(),
+                "spring.datasource.username=" + CONTAINER.getUsername(),
+                "spring.datasource.password=" + CONTAINER.getPassword(),
+                "spring.datasource.driver-class-name=org.postgresql.Driver",
+                "spring.liquibase.enabled=true"}
+        ).applyTo(context.getEnvironment());
     }
 
     static {

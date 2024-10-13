@@ -1,1 +1,3 @@
 databaseChangeLog:
+  - include:
+      file: migrations/changelog/CB-2.sql

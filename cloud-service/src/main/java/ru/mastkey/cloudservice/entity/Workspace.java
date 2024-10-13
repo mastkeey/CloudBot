@@ -25,9 +25,11 @@ public class Workspace {
     @Column(name = "id", nullable = false, updatable = false, unique = true)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    private String name;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
