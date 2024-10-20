@@ -1,27 +1,22 @@
 package ru.mastkey.cloudservice.configuration;
 
 import io.minio.MinioClient;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.mastkey.cloudservice.configuration.properties.S3Properties;
 
 @Configuration
+@RequiredArgsConstructor
 public class MinioClientConfiguration {
 
-    @Value("${s3.url}")
-    private String url;
-
-    @Value("${s3.accessKey}")
-    private String accessKey;
-
-    @Value("${s3.secretKey}")
-    private String secretKey;
+    private final S3Properties s3Properties;
 
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint(url)
-                .credentials(accessKey, secretKey)
+                .endpoint(s3Properties.getUrl())
+                .credentials(s3Properties.getAccessKey(), s3Properties.getSecretKey())
                 .build();
     }
 }

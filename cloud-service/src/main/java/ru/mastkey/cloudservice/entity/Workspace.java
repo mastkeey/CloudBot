@@ -1,9 +1,7 @@
 package ru.mastkey.cloudservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
@@ -14,7 +12,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Accessors(chain = true)
-@SuperBuilder
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "workspace")

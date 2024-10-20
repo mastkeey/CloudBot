@@ -1,3 +1,4 @@
 databaseChangeLog:
-  - include:
-      file: migrations/changelog/CB-2.sql
+  - includeAll:
+      path: changelog/
+      relativeToChangelogFile: true

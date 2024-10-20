@@ -6,6 +6,5 @@ import ru.mastkey.cloudservice.entity.Workspace;
 
 import java.util.UUID;
 
-@Repository
 public interface WorkspaceRepository extends JpaRepository<Workspace, UUID> {
 }

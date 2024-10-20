@@ -2,12 +2,10 @@ package ru.mastkey.cloudservice.support;
 
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.mastkey.cloudservice.repository.UserRepository;
 import ru.mastkey.cloudservice.repository.WorkspaceRepository;
@@ -15,11 +13,10 @@ import ru.mastkey.cloudservice.repository.WorkspaceRepository;
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = {PostgreSQLInitializer.class, MinioInitializer.class})
-@AutoConfigureWebTestClient
 @TestPropertySource(locations = "classpath:application-test.yml")
 public class IntegrationTestBase {
     @Autowired
-    protected WebTestClient webClient;
+    protected TestRestTemplate testRestTemplate;
 
     @Autowired
     protected UserRepository userRepository;

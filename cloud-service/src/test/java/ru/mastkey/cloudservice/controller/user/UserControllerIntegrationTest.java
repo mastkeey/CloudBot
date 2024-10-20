@@ -1,7 +1,8 @@
-package ru.mastkey.cloudservice.controller;
+package ru.mastkey.cloudservice.controller.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.mastkey.cloudservice.controller.dto.CreateUserRequest;
 import ru.mastkey.cloudservice.controller.dto.UserResponse;
 import ru.mastkey.cloudservice.entity.User;
@@ -10,59 +11,50 @@ import ru.mastkey.cloudservice.support.IntegrationTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UserControllerTest extends IntegrationTestBase {
+class UserControllerIntegrationTest extends IntegrationTestBase {
 
-    private static final String BASE_URL = "/api/users";
+    private static final String BASE_URL = "/api/v1/users";
 
     @Test
     void createUserSuccessTest() {
         var request = createCreateUserRequest();
 
-        var response = webClient.post()
-                .uri(BASE_URL)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(UserResponse.class)
-                .returnResult()
-                .getResponseBody();
+        ResponseEntity<UserResponse> response = testRestTemplate
+                .postForEntity(BASE_URL, request, UserResponse.class);
 
         var user = userRepository.findAll().get(0);
+        var body = response.getBody();
 
-        assertThat(user.getId()).isEqualTo(request.getId());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(user.getTelegramUserId()).isEqualTo(request.getTelegramUserId());
         assertThat(user.getChatId()).isEqualTo(request.getChatId());
         assertThat(user.getCreatedAt()).isNotNull();
         assertThat(user.getWorkspaces().get(0).getName()).isEqualTo(request.getUsername());
-        assertThat(response.getChatId()).isEqualTo(request.getChatId());
-        assertThat(response.getId()).isEqualTo(request.getId());
+        assertThat(body.getChatId()).isEqualTo(request.getChatId());
+        assertThat(body.getTelegramUserId()).isEqualTo(request.getTelegramUserId());
+        assertThat(body.getId()).isNotNull();
     }
 
     @Test
     void createUserConflictTest() {
         var request = createCreateUserRequest();
         var user = User.builder()
-                .id(request.getId())
+                .telegramUserId(request.getTelegramUserId())
                 .chatId(request.getChatId())
                 .build();
 
         userRepository.save(user);
 
-        var error = webClient.post()
-                .uri(BASE_URL)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.CONFLICT)
-                .expectBody(ErrorResponse.class)
-                .returnResult()
-                .getResponseBody();
+        ResponseEntity<ErrorResponse> response = testRestTemplate
+                .postForEntity(BASE_URL, request, ErrorResponse.class);
 
-        assertThat(error.getMessage()).contains(String.format("Пользователь с id %s уже существует.", request.getId()));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody().getMessage()).contains(String.format("Пользователь с id %s уже существует.", request.getTelegramUserId()));
     }
 
     public CreateUserRequest createCreateUserRequest() {
         var request = new CreateUserRequest();
-        request.setId(123L);
+        request.setTelegramUserId(123L);
         request.setChatId(321L);
         request.setUsername("mastkey");
         return request;
