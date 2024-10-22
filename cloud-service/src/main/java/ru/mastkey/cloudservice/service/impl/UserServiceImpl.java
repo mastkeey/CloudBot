@@ -11,13 +11,14 @@ import ru.mastkey.cloudservice.exception.ErrorType;
 import ru.mastkey.cloudservice.exception.ServiceException;
 import ru.mastkey.cloudservice.repository.UserRepository;
 import ru.mastkey.cloudservice.service.UserService;
+import ru.mastkey.cloudservice.service.WorkspaceService;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final ConversionService conversionService;
     private final UserRepository userRepository;
-    private final WorkspaceServiceImpl workspaceService;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     @Override

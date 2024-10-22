@@ -51,20 +51,23 @@ class WorkspaceServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        var testTgUserId = 12345L;
+        var testWorkspaceName = "test_workspace";
+
         createWorkspaceRequest = new CreateWorkspaceRequest();
-        createWorkspaceRequest.setTelegramUserId(12345L);
-        createWorkspaceRequest.setName("test_workspace");
+        createWorkspaceRequest.setTelegramUserId(testTgUserId);
+        createWorkspaceRequest.setName(testWorkspaceName);
 
         user = new User();
-        user.setTelegramUserId(12345L);
+        user.setTelegramUserId(testTgUserId);
 
         workspace = new Workspace();
-        workspace.setName("test_workspace");
+        workspace.setName(testWorkspaceName);
         workspace.setUser(user);
         workspace.setId(UUID.randomUUID());
 
         workspaceResponse = new WorkspaceResponse();
-        workspaceResponse.setName("test_workspace");
+        workspaceResponse.setName(testWorkspaceName);
     }
 
     @Test
@@ -80,8 +83,8 @@ class WorkspaceServiceImplTest {
 
         assertThat(response).isNotNull();
         assertThat(createWorkspaceRequest.getName()).isEqualTo(response.getName());
-        verify(workspaceRepository, times(1)).save(any(Workspace.class));
-        verify(s3Client, times(1)).createBucketIfNotExists(anyString());
+        verify(workspaceRepository).save(any(Workspace.class));
+        verify(s3Client).createBucketIfNotExists(anyString());
     }
 
     @Test
@@ -111,7 +114,7 @@ class WorkspaceServiceImplTest {
 
         assertThat(response).isNotNull();
         assertThat("test_workspace").isEqualTo(response.getName());
-        verify(workspaceRepository, times(1)).save(any(Workspace.class));
-        verify(s3Client, times(1)).createBucketIfNotExists(anyString());
+        verify(workspaceRepository).save(any(Workspace.class));
+        verify(s3Client).createBucketIfNotExists(anyString());
     }
 }

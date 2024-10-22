@@ -44,17 +44,20 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        var testTgUserId = 12345L;
+        var testChatUserId = 12345L;
+
         createUserRequest = new CreateUserRequest();
-        createUserRequest.setTelegramUserId(12345L);
-        createUserRequest.setChatId(12345L);
+        createUserRequest.setTelegramUserId(testTgUserId);
+        createUserRequest.setChatId(testChatUserId);
         createUserRequest.setUsername("testuser");
 
         user = new User();
-        user.setTelegramUserId(12345L);
+        user.setTelegramUserId(testTgUserId);
 
         userResponse = new UserResponse();
-        userResponse.setTelegramUserId(12345L);
-        userResponse.setChatId(12345L);
+        userResponse.setTelegramUserId(testTgUserId);
+        userResponse.setChatId(testChatUserId);
     }
 
     @Test
@@ -73,8 +76,8 @@ class UserServiceImplTest {
         assertThat(response).isNotNull();
         assertThat(createUserRequest.getTelegramUserId()).isEqualTo(response.getTelegramUserId());
         assertThat(createUserRequest.getChatId()).isEqualTo(response.getChatId());
-        verify(userRepository, times(1)).save(user);
-        verify(workspaceService, times(1))
+        verify(userRepository).save(user);
+        verify(workspaceService)
                 .createWorkspace(user.getTelegramUserId(), createUserRequest.getUsername());
     }
 

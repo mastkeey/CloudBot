@@ -2,12 +2,10 @@ package ru.mastkey.cloudservice.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.mastkey.cloudservice.controller.UserController;
@@ -19,7 +17,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
 class UserControllerTest {
 
@@ -34,14 +31,17 @@ class UserControllerTest {
 
     @Test
     void createUser_ShouldReturnUserResponse() throws Exception {
+        var testTgUserId = 12345L;
+        var testChatUserId = 12345L;
+
         var request = new CreateUserRequest();
-        request.setTelegramUserId(12345L);
+        request.setTelegramUserId(testTgUserId);
         request.setUsername("testuser");
-        request.setChatId(12345L);
+        request.setChatId(testChatUserId);
 
         var userResponse = new UserResponse();
-        userResponse.setTelegramUserId(12345L);
-        userResponse.setChatId(12345L);
+        userResponse.setTelegramUserId(testTgUserId);
+        userResponse.setChatId(testChatUserId);
 
         when(userService.createUser(any(CreateUserRequest.class))).thenReturn(userResponse);
 
@@ -50,8 +50,8 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.telegramUserId").value("12345"))
-                .andExpect(jsonPath("$.chatId").value("12345"));
+                .andExpect(jsonPath("$.telegramUserId").value(testTgUserId))
+                .andExpect(jsonPath("$.chatId").value(testChatUserId));
     }
 
     @Test
