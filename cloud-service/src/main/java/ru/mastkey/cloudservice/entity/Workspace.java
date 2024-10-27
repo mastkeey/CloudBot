@@ -1,9 +1,7 @@
 package ru.mastkey.cloudservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
@@ -14,7 +12,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Accessors(chain = true)
-@SuperBuilder
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "workspace")
@@ -25,9 +24,11 @@ public class Workspace {
     @Column(name = "id", nullable = false, updatable = false, unique = true)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    private String name;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
