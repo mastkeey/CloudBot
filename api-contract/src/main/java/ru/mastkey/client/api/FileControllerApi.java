@@ -21,8 +21,8 @@ import ru.mastkey.client.Configuration;
 import ru.mastkey.client.Pair;
 
 import ru.mastkey.model.FileResponse;
-import org.springframework.core.io.Resource;
 import java.util.UUID;
+import org.springframework.core.io.UrlResource;
 
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2024-11-27T23:18:56.704637+03:00[Europe/Moscow]", comments = "Generator version: 7.10.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2024-11-28T00:27:38.668427+03:00[Europe/Moscow]", comments = "Generator version: 7.10.0")
 public class FileControllerApi extends BaseApi {
 
   public FileControllerApi() {
@@ -119,10 +119,10 @@ public class FileControllerApi extends BaseApi {
    * 
    * 
    * @param fileId  (required)
-   * @return Resource
+   * @return UrlResource
    * @throws ApiException if fails to make API call
    */
-  public Resource getFile(UUID fileId) throws ApiException {
+  public UrlResource getFile(UUID fileId) throws ApiException {
     return this.getFile(fileId, Collections.emptyMap());
   }
 
@@ -132,10 +132,10 @@ public class FileControllerApi extends BaseApi {
    * 
    * @param fileId  (required)
    * @param additionalHeaders additionalHeaders for this call
-   * @return Resource
+   * @return UrlResource
    * @throws ApiException if fails to make API call
    */
-  public Resource getFile(UUID fileId, Map<String, String> additionalHeaders) throws ApiException {
+  public UrlResource getFile(UUID fileId, Map<String, String> additionalHeaders) throws ApiException {
     Object localVarPostBody = null;
     
     // verify the required parameter 'fileId' is set
@@ -172,7 +172,7 @@ public class FileControllerApi extends BaseApi {
 
     String[] localVarAuthNames = new String[] {  };
 
-    TypeReference<Resource> localVarReturnType = new TypeReference<Resource>() {};
+    TypeReference<UrlResource> localVarReturnType = new TypeReference<UrlResource>() {};
     return apiClient.invokeAPI(
         localVarPath,
         "GET",
@@ -278,7 +278,7 @@ public class FileControllerApi extends BaseApi {
    * @param files Массив загружаемых файлов (будет использоваться Resource вместо File) (required)
    * @throws ApiException if fails to make API call
    */
-  public void uploadFiles(Long telegramUserId, List<Resource> files) throws ApiException {
+  public void uploadFiles(Long telegramUserId, List<UrlResource> files) throws ApiException {
     this.uploadFiles(telegramUserId, files, Collections.emptyMap());
   }
 
@@ -291,7 +291,7 @@ public class FileControllerApi extends BaseApi {
    * @param additionalHeaders additionalHeaders for this call
    * @throws ApiException if fails to make API call
    */
-  public void uploadFiles(Long telegramUserId, List<Resource> files, Map<String, String> additionalHeaders) throws ApiException {
+  public void uploadFiles(Long telegramUserId, List<UrlResource> files, Map<String, String> additionalHeaders) throws ApiException {
     Object localVarPostBody = null;
     
     // verify the required parameter 'telegramUserId' is set

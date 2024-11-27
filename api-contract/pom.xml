@@ -99,11 +99,11 @@
                                 OAuth.java,EncodingUtils.java,Configuration.java,StringUtil.java,JavaTimeFormatter.java,ServerConfiguration.java,ServerVariable.java,RFC3339DateFormat.java
                             </supportingFilesToGenerate>
                             <typeMappings>
-                                <typeMapping>binary=Resource</typeMapping>
-                                <typeMapping>file=Resource</typeMapping>
+                                <typeMapping>binary=UrlResource</typeMapping>
+                                <typeMapping>file=UrlResource</typeMapping>
                             </typeMappings>
                             <importMappings>
-                                <importMapping>Resource=org.springframework.core.io.Resource</importMapping>
+                                <importMapping>UrlResource=org.springframework.core.io.UrlResource</importMapping>
                             </importMappings>
                             <configOptions>
                                 <generateMetadata>false</generateMetadata>
