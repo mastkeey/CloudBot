@@ -50,11 +50,12 @@ paths:
         - user-controller
       operationId: changeCurrentWorkspace
       parameters:
-        - name: newWorkspaceName
+        - name: newWorkspaceId
           in: query
           required: true
           schema:
             type: string
+            format: uuid
         - name: telegramUserId
           in: path
           required: true
