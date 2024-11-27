@@ -4,9 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <packaging>
-        pom
-    </packaging>
+    <packaging>pom</packaging>
 
     <groupId>ru.mastkey</groupId>
     <artifactId>CloudBot</artifactId>
@@ -21,5 +19,6 @@
     <modules>
         <module>bot-service</module>
         <module>cloud-service</module>
+        <module>api-contract</module>
     </modules>
 </project>

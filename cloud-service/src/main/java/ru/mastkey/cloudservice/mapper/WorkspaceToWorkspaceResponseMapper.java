@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.springframework.core.convert.converter.Converter;
-import ru.mastkey.cloudservice.controller.dto.WorkspaceResponse;
 import ru.mastkey.cloudservice.entity.Workspace;
+import ru.mastkey.model.WorkspaceResponse;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface WorkspaceToWorkspaceResponseMapper extends Converter<Workspace, WorkspaceResponse> {

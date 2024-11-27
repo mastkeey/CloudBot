@@ -30,11 +30,8 @@ public class File {
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "relative_path", nullable = false)
-    private String relativePath;
-
-    @Column(name = "checksum", nullable = false)
-    private String checksum;
+    @Column(name = "file_extension", nullable = false)
+    private String fileExtension;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

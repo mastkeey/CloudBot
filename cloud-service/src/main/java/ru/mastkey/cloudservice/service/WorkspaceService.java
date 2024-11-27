@@ -1,10 +1,24 @@
 package ru.mastkey.cloudservice.service;
 
-import ru.mastkey.cloudservice.controller.dto.CreateWorkspaceRequest;
-import ru.mastkey.cloudservice.controller.dto.WorkspaceResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import ru.mastkey.cloudservice.entity.User;
+import ru.mastkey.cloudservice.entity.Workspace;
+import ru.mastkey.model.CreateWorkspaceRequest;
+import ru.mastkey.model.WorkspaceResponse;
+
+import java.util.UUID;
 
 public interface WorkspaceService {
-    WorkspaceResponse createWorkspace(Long userId, String name);
+    Workspace createWorkspace(Long userId, String name);
 
     WorkspaceResponse createWorkspace(CreateWorkspaceRequest createWorkspaceRequest);
+
+    Page<WorkspaceResponse> getWorkspaces(Long telegramUserId, PageRequest pageRequest);
+
+    WorkspaceResponse changeWorkspaceName(UUID workspaceId, String newWorkspaceName);
+
+    void deleteWorkspace(UUID workspaceId);
+
+    Workspace createWorkspaceForNewUser(User user, String name);
 }

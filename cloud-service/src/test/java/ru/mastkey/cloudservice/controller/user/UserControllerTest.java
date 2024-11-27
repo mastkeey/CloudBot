@@ -9,12 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.mastkey.cloudservice.controller.UserController;
-import ru.mastkey.cloudservice.controller.dto.CreateUserRequest;
-import ru.mastkey.cloudservice.controller.dto.UserResponse;
 import ru.mastkey.cloudservice.service.UserService;
+import ru.mastkey.model.CreateUserRequest;
+import ru.mastkey.model.UserResponse;
+
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -63,6 +65,28 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changeCurrentWorkspace_ShouldReturnOk() throws Exception {
+        var telegramUserId = 12345L;
+        var newWorkspaceId = UUID.randomUUID();
+
+        doNothing().when(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceId);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/{telegramUserId}/changeCurrentWorkspace", telegramUserId)
+                        .param("newWorkspaceId", newWorkspaceId.toString()))
+                .andExpect(status().isOk());
+
+        verify(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceId);
+    }
+
+    @Test
+    void changeCurrentWorkspace_ShouldReturnBadRequest_WhenWorkspaceNameIsMissing() throws Exception {
+        var telegramUserId = 12345L;
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/{telegramUserId}/changeCurrentWorkspace", telegramUserId))
                 .andExpect(status().isBadRequest());
     }
 }
