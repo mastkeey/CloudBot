@@ -114,12 +114,15 @@ paths:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - files
               properties:
                 files:
                   type: array
                   items:
                     type: string
                     format: binary
+                  description: Массив загружаемых файлов (будет использоваться Resource вместо File)
       responses:
         '200':
           description: OK

@@ -14,6 +14,8 @@ import ru.mastkey.cloudservice.repository.FileRepository;
 import ru.mastkey.cloudservice.repository.UserRepository;
 import ru.mastkey.cloudservice.repository.WorkspaceRepository;
 
+import java.util.ArrayList;
+
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = {PostgreSQLInitializer.class, MinioInitializer.class})
@@ -48,7 +50,7 @@ public class IntegrationTestBase {
                 .telegramUserId(1L)
                 .chatId(1L)
                 .bucketName("mastkey-1")
-                .currentWorkspaceName("mastkey")
+                .workspaces(new ArrayList<>())
                 .build());
 
         var workspace = Workspace.builder()
@@ -56,8 +58,17 @@ public class IntegrationTestBase {
                 .user(user)
                 .build();
 
+        workspace = workspaceRepository.save(workspace);
+
+        user.getWorkspaces().add(workspace);
+
+        user.setCurrentWorkspace(workspace);
+
+        userRepository.save(user);
+
         s3Client.createBucketIfNotExists(user.getBucketName());
-        return workspaceRepository.save(workspace);
+
+        return workspace;
     }
 
     @AfterEach

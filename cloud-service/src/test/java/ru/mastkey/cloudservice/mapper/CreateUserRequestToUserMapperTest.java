@@ -43,7 +43,6 @@ class CreateUserRequestToUserMapperTest {
         assertThat(user.getTelegramUserId()).isEqualTo(123456L);
         assertThat(user.getChatId()).isEqualTo(7891011L);
         assertThat(user.getBucketName()).isEqualTo("123456");
-        assertThat(user.getCurrentWorkspaceName()).isEqualTo("john_doe");
     }
 
     @Test
@@ -55,6 +54,5 @@ class CreateUserRequestToUserMapperTest {
         assertThat(user).isNotNull();
         assertThat(user.getTelegramUserId()).isNull();
         assertThat(user.getChatId()).isNull();
-        assertThat(user.getCurrentWorkspaceName()).isNull();
     }
 }

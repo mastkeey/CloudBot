@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mastkey.cloudservice.client.S3Client;
+import ru.mastkey.cloudservice.entity.User;
 import ru.mastkey.cloudservice.entity.Workspace;
 import ru.mastkey.cloudservice.exception.ErrorType;
 import ru.mastkey.cloudservice.exception.ServiceException;
@@ -39,14 +40,34 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Override
     @Transactional
     public Workspace createWorkspace(Long telegramUserId, String name) {
-        var user = userRepository.findByTelegramUserId(telegramUserId).orElseThrow(
+        var user = userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId).orElseThrow(
                 () -> new ServiceException(ErrorType.NOT_FOUND,
                         MSG_USER_NOT_FOUND, telegramUserId)
         );
 
+        var workspaceExists = user.getWorkspaces().stream()
+                .anyMatch(workspace -> workspace.getName().equals(name));
+
+        if (workspaceExists) {
+            throw new ServiceException(ErrorType.CONFLICT, MSG_WORKSPACE_ALREADY_EXIST, name);
+        }
+
         var workspace = new Workspace();
         workspace.setName(name);
         workspace.setUser(user);
+        var savedWorkspace = workspaceRepository.save(workspace);
+        s3Client.createFolder(user.getBucketName(), name);
+
+        return savedWorkspace;
+    }
+
+    @Transactional
+    @Override
+    public Workspace createWorkspaceForNewUser(User user, String name) {
+        var workspace = new Workspace();
+        workspace.setName(name);
+        workspace.setUser(user);
+
         var savedWorkspace = workspaceRepository.save(workspace);
         s3Client.createFolder(user.getBucketName(), name);
 
@@ -83,6 +104,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         var workspace = workspaceRepository.findById(workspaceId).orElseThrow(
                 () -> new ServiceException(ErrorType.NOT_FOUND, MSG_WORKSPACE_NOT_FOUND, workspaceId)
         );
+
+        if (workspace.getUser().getCurrentWorkspace().getId().equals(workspaceId)) {
+            throw new ServiceException(ErrorType.CONFLICT, MSG_DELETE_CURRENT_WORKSPACE);
+        }
 
         workspaceRepository.delete(workspace);
         s3Client.deleteFolder(workspace.getUser().getBucketName(), workspace.getName());

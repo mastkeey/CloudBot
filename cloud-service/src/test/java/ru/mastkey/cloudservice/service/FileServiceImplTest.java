@@ -73,18 +73,18 @@ class FileServiceImplTest {
 
         user = new User();
         user.setTelegramUserId(12345L);
-        user.setCurrentWorkspaceName(testWorkspaceName);
         user.setBucketName("test_bucket");
 
         workspace = new Workspace();
         workspace.setName(testWorkspaceName);
         workspace.setUser(user);
         user.setWorkspaces(List.of(workspace));
+        user.setCurrentWorkspace(workspace);
     }
 
     @Test
     void uploadFiles_ShouldUploadFilesSuccessfully() {
-        when(userRepository.findByTelegramUserId(user.getTelegramUserId())).thenReturn(Optional.of(user));
+        when(userRepository.findByTelegramUserIdWithWorkspaces(user.getTelegramUserId())).thenReturn(Optional.of(user));
         when(fileRepository.findByWorkspaceAndFileNameAndFileExtension(any(), any(), any())).thenReturn(Optional.empty());
         when(multipartFile.getOriginalFilename()).thenReturn("testfile.txt");
 
@@ -101,30 +101,12 @@ class FileServiceImplTest {
 
     @Test
     void uploadFiles_ShouldThrowException_WhenUserNotFound() {
-        when(userRepository.findByTelegramUserId(user.getTelegramUserId())).thenReturn(Optional.empty());
+        when(userRepository.findByTelegramUserIdWithWorkspaces(user.getTelegramUserId())).thenReturn(Optional.empty());
 
         var exception = assertThrows(ServiceException.class,
                 () -> fileServiceImpl.uploadFiles(List.of(multipartFile), user.getTelegramUserId()));
 
         assertThat(exception.getCode()).isEqualTo(ErrorType.NOT_FOUND.getCode());
-        verify(fileRepository, never()).save(any(File.class));
-        verify(s3Client, never()).uploadFile(any(), anyString(), anyString());
-    }
-
-    @Test
-    void uploadFiles_ShouldThrowException_WhenCurrentWorkspaceNotFound() {
-        var testUser = new User();
-        testUser.setTelegramUserId(12345L);
-        testUser.setCurrentWorkspaceName("test-workspace");
-        testUser.setBucketName("test_bucket");
-        testUser.setWorkspaces(List.of());
-
-        when(userRepository.findByTelegramUserId(user.getTelegramUserId())).thenReturn(Optional.of(testUser));
-
-        var exception = assertThrows(ServiceException.class,
-                () -> fileServiceImpl.uploadFiles(List.of(multipartFile), user.getTelegramUserId()));
-
-        assertThat(exception.getCode()).isEqualTo(ErrorType.INTERNAL_SERVER_ERROR.getCode());
         verify(fileRepository, never()).save(any(File.class));
         verify(s3Client, never()).uploadFile(any(), anyString(), anyString());
     }
@@ -202,7 +184,7 @@ class FileServiceImplTest {
         var workspaceId = UUID.randomUUID();
         workspace.setId(workspaceId);
 
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId)).thenReturn(Optional.of(user));
         when(fileRepository.findAll(any(Specification.class), eq(pageRequest))).thenReturn(pagedFiles);
         when(conversionService.convert(file, FileResponse.class)).thenReturn(fileResponse);
 
@@ -212,26 +194,9 @@ class FileServiceImplTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0)).isEqualTo(fileResponse);
 
-        verify(userRepository).findByTelegramUserId(telegramUserId);
+        verify(userRepository).findByTelegramUserIdWithWorkspaces(telegramUserId);
         verify(fileRepository).findAll(any(Specification.class), eq(pageRequest));
         verify(conversionService).convert(file, FileResponse.class);
-    }
-
-
-    @Test
-    void getFilesInfo_ShouldThrowException_WhenWorkspaceNotFound() {
-        var telegramUserId = 12345L;
-        var pageRequest = PageRequest.of(0, 10);
-
-        user.setWorkspaces(List.of()); // Пустой список рабочих пространств
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.of(user));
-
-        var exception = assertThrows(ServiceException.class,
-                () -> fileServiceImpl.getFilesInfo(telegramUserId, pageRequest));
-
-        assertThat(exception.getCode()).isEqualTo(ErrorType.BAD_REQUEST.getCode());
-        assertThat(exception.getMessage()).isEqualTo("Error with current workspace");
-        verify(userRepository).findByTelegramUserId(telegramUserId);
     }
 
     @Test
@@ -239,14 +204,14 @@ class FileServiceImplTest {
         var telegramUserId = 12345L;
         var pageRequest = PageRequest.of(0, 10);
 
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.empty());
+        when(userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId)).thenReturn(Optional.empty());
 
         var exception = assertThrows(ServiceException.class,
                 () -> fileServiceImpl.getFilesInfo(telegramUserId, pageRequest));
 
         assertThat(exception.getCode()).isEqualTo(ErrorType.NOT_FOUND.getCode());
         assertThat(exception.getMessage()).isEqualTo(String.format("User with id %s not found", telegramUserId));
-        verify(userRepository).findByTelegramUserId(telegramUserId);
+        verify(userRepository).findByTelegramUserIdWithWorkspaces(telegramUserId);
     }
 
     @Test

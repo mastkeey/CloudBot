@@ -2,6 +2,7 @@ package ru.mastkey.cloudservice.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import ru.mastkey.cloudservice.entity.User;
 import ru.mastkey.cloudservice.entity.Workspace;
 import ru.mastkey.model.CreateWorkspaceRequest;
 import ru.mastkey.model.WorkspaceResponse;
@@ -18,4 +19,6 @@ public interface WorkspaceService {
     WorkspaceResponse changeWorkspaceName(UUID workspaceId, String newWorkspaceName);
 
     void deleteWorkspace(UUID workspaceId);
+
+    Workspace createWorkspaceForNewUser(User user, String name);
 }

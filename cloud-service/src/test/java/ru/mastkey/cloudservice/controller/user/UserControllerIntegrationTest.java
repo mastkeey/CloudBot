@@ -9,6 +9,8 @@ import ru.mastkey.model.CreateUserRequest;
 import ru.mastkey.model.ErrorResponse;
 import ru.mastkey.model.UserResponse;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UserControllerIntegrationTest extends IntegrationTestBase {
@@ -24,7 +26,7 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        var user = userRepository.findAll().get(0);
+        var user = userRepository.findByTelegramUserIdWithWorkspaces(request.getTelegramUserId()).get();
         var body = response.getBody();
 
         assertThat(user.getTelegramUserId()).isEqualTo(request.getTelegramUserId());
@@ -56,10 +58,11 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
     @Test
     void changeCurrentWorkspaceUserNotFountTest() {
         var testId = 123123L;
+        var testWorkspaceId = UUID.randomUUID().toString();
 
-        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceName=%s",
+        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceId=%s",
                 testId,
-                "test");
+                testWorkspaceId);
 
         ResponseEntity<ErrorResponse> response = testRestTemplate
                 .postForEntity(urlWithParams, null, ErrorResponse.class);
@@ -72,13 +75,13 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void changeCurrentWorkspaceWorkspaceNoFountTest() {
+    void changeCurrentWorkspaceWorkspaceNotFountTest() {
         var testId = createUser().getTelegramUserId();
-        var testWorkspaceName = "test";
+        var testWorkspaceId = UUID.randomUUID().toString();
 
-        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceName=%s",
+        String urlWithParams = String.format("/api/v1/users/%s/changeCurrentWorkspace?newWorkspaceId=%s",
                 testId,
-                testWorkspaceName);
+                testWorkspaceId);
 
 
         ResponseEntity<ErrorResponse> response = testRestTemplate
@@ -88,7 +91,7 @@ class UserControllerIntegrationTest extends IntegrationTestBase {
 
         var error = response.getBody();
 
-        assertThat(error.getMessage()).isEqualTo(String.format("User with id %s does not have a Workspace named %s", testId, testWorkspaceName));
+        assertThat(error.getMessage()).isEqualTo(String.format("User with id %s does not have a Workspace with id %s", testId, testWorkspaceId));
     }
 
 

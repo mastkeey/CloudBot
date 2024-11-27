@@ -74,7 +74,7 @@ class WorkspaceServiceImplTest {
 
     @Test
     void createWorkspace_ShouldCreateWorkspaceSuccessfully() {
-        when(userRepository.findByTelegramUserId(createWorkspaceRequest.getTelegramUserId()))
+        when(userRepository.findByTelegramUserIdWithWorkspaces(createWorkspaceRequest.getTelegramUserId()))
                 .thenReturn(Optional.of(user));
         when(workspaceRepository.save(any(Workspace.class)))
                 .thenReturn(workspace);
@@ -91,7 +91,26 @@ class WorkspaceServiceImplTest {
 
     @Test
     void createWorkspace_ShouldThrowNotFoundException_WhenUserNotFound() {
-        when(userRepository.findByTelegramUserId(createWorkspaceRequest.getTelegramUserId()))
+        var testUser = new User();
+        var testWorkspace = new Workspace();
+        testWorkspace.setName(createWorkspaceRequest.getName());
+        testUser.getWorkspaces().add(testWorkspace);
+
+        when(userRepository.findByTelegramUserIdWithWorkspaces(createWorkspaceRequest.getTelegramUserId()))
+                .thenReturn(Optional.of(testUser));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> workspaceService.createWorkspace(createWorkspaceRequest));
+
+        assertThat(ErrorType.CONFLICT.getCode()).isEqualTo(exception.getCode());
+        assertThat("Workspace with name %s already exist".formatted(createWorkspaceRequest.getName())).isEqualTo(exception.getMessage());
+        verify(workspaceRepository, never()).save(any(Workspace.class));
+        verify(s3Client, never()).createBucketIfNotExists(anyString());
+    }
+
+    @Test
+    void createWorkspace_ShouldThrowNotFoundException_WorkspaceAlreadyExists() {
+        when(userRepository.findByTelegramUserIdWithWorkspaces(createWorkspaceRequest.getTelegramUserId()))
                 .thenReturn(Optional.empty());
 
         ServiceException exception = assertThrows(ServiceException.class,
@@ -105,7 +124,7 @@ class WorkspaceServiceImplTest {
 
     @Test
     void createWorkspace_WithUserIdAndName_ShouldCreateWorkspaceSuccessfully() {
-        when(userRepository.findByTelegramUserId(12345L))
+        when(userRepository.findByTelegramUserIdWithWorkspaces(12345L))
                 .thenReturn(Optional.of(user));
         when(workspaceRepository.save(any(Workspace.class)))
                 .thenReturn(workspace);
@@ -175,6 +194,8 @@ class WorkspaceServiceImplTest {
     @Test
     void deleteWorkspace_ShouldDeleteWorkspaceSuccessfully() {
         var workspaceId = UUID.randomUUID();
+        workspace.setId(workspaceId);
+        user.setCurrentWorkspace(new Workspace().setId(UUID.randomUUID()));
 
         when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
 
@@ -196,6 +217,27 @@ class WorkspaceServiceImplTest {
 
         assertThat(exception.getCode()).isEqualTo(ErrorType.NOT_FOUND.getCode());
         assertThat(exception.getMessage()).isEqualTo("Workspace with id %s not found".formatted(workspaceId));
+        verify(workspaceRepository).findById(workspaceId);
+        verify(workspaceRepository, never()).delete(any(Workspace.class));
+        verify(s3Client, never()).deleteFolder(anyString(), anyString());
+    }
+
+    @Test
+    void deleteWorkspace_ShouldThrowConflictException_WhenWorkspaceIsCurrent() {
+        var workspaceId = UUID.randomUUID();
+        var testUser = new User();
+        var testWorkspace = new Workspace();
+        testWorkspace.setId(workspaceId);
+        testUser.setCurrentWorkspace(testWorkspace);
+        testWorkspace.setUser(testUser);
+
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(testWorkspace));
+
+        ServiceException exception = assertThrows(ServiceException.class,
+                () -> workspaceService.deleteWorkspace(workspaceId));
+
+        assertThat(exception.getCode()).isEqualTo(ErrorType.CONFLICT.getCode());
+        assertThat(exception.getMessage()).isEqualTo("You can't delete current workspace");
         verify(workspaceRepository).findById(workspaceId);
         verify(workspaceRepository, never()).delete(any(Workspace.class));
         verify(s3Client, never()).deleteFolder(anyString(), anyString());

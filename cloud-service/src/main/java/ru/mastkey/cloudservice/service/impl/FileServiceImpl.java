@@ -37,17 +37,13 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public void uploadFiles(List<MultipartFile> files, Long userId) {
-        var user = userRepository.findByTelegramUserId(userId).orElseThrow(
+        var user = userRepository.findByTelegramUserIdWithWorkspaces(userId).orElseThrow(
                 () -> new ServiceException(ErrorType.NOT_FOUND, MSG_USER_NOT_FOUND, userId)
         );
 
-        var workspace = user.getWorkspaces().stream()
-                .filter(wrkspc -> Objects.equals(wrkspc.getName(), user.getCurrentWorkspaceName()))
-                .findFirst().orElseThrow(
-                        () -> new ServiceException(ErrorType.INTERNAL_SERVER_ERROR, MSG_CURRENT_WORKSPACE_ERROR)
-                );
+        var currentWorkspace = user.getCurrentWorkspace();
 
-        files.forEach(file -> uploadFile(file, workspace));
+        files.forEach(file -> uploadFile(file, currentWorkspace));
     }
 
     @Override
@@ -82,15 +78,11 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional(readOnly = true)
     public Page<FileResponse> getFilesInfo(Long telegramUserId, PageRequest pageRequest) {
-        var user = userRepository.findByTelegramUserId(telegramUserId).orElseThrow(
+        var user = userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId).orElseThrow(
                 () -> new ServiceException(ErrorType.NOT_FOUND, MSG_USER_NOT_FOUND, telegramUserId)
         );
 
-        var currentWorkspace = user.getWorkspaces().stream()
-                .filter(wrkspc -> Objects.equals(wrkspc.getName(), user.getCurrentWorkspaceName()))
-                .findFirst().orElseThrow(
-                        () -> new ServiceException(ErrorType.BAD_REQUEST, MSG_CURRENT_WORKSPACE_ERROR)
-                );
+        var currentWorkspace = user.getCurrentWorkspace();
 
         var spec = SpecificationUtils.getFilesSpecification(currentWorkspace.getId());
         var files = fileRepository.findAll(spec, pageRequest);
@@ -99,7 +91,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void deleteFile(UUID fileId) {
         var file = fileRepository.findById(fileId).orElseThrow(
                 () -> new ServiceException(ErrorType.BAD_REQUEST, MSG_FILE_NOT_FOUND, fileId)
@@ -108,6 +100,7 @@ public class FileServiceImpl implements FileService {
         var path = FileUtils.generateRelativePath(file.getWorkspace(), file.getFileName(), file.getFileExtension());
         var bucketName = file.getWorkspace().getUser().getBucketName();
         s3Client.deleteFile(bucketName, path);
+        fileRepository.delete(file);
     }
 
     @Override

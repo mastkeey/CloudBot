@@ -14,6 +14,8 @@ import ru.mastkey.cloudservice.service.WorkspaceService;
 import ru.mastkey.model.CreateUserRequest;
 import ru.mastkey.model.UserResponse;
 
+import java.util.UUID;
+
 import static ru.mastkey.cloudservice.util.Constants.*;
 
 @Service
@@ -37,26 +39,29 @@ public class UserServiceImpl implements UserService {
         var savedUser = userRepository.save(user);
 
         s3Client.createBucketIfNotExists(user.getBucketName());
-        workspaceService.createWorkspace(savedUser.getTelegramUserId(), request.getUsername());
+        var workspace = workspaceService.createWorkspaceForNewUser(savedUser, request.getUsername());
 
-        return conversionService.convert(user, UserResponse.class);
+        user.setCurrentWorkspace(workspace);
+        userRepository.save(savedUser);
+
+        return conversionService.convert(savedUser, UserResponse.class);
     }
 
     @Transactional
     @Override
-    public void changeCurrentWorkspace(Long telegramUserId, String newWorkspaceName) {
-        var user = userRepository.findByTelegramUserId(telegramUserId).orElseThrow(
+    public void changeCurrentWorkspace(Long telegramUserId, UUID newWorkspaceId) {
+        var user = userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId).orElseThrow(
                 () -> new ServiceException(ErrorType.NOT_FOUND, MSG_USER_NOT_FOUND, telegramUserId)
         );
 
-        user.getWorkspaces().stream()
-                .filter(workspace -> workspace.getName().equals(newWorkspaceName))
+        var newCurrentWorkspace = user.getWorkspaces().stream()
+                .filter(workspace -> workspace.getId().equals(newWorkspaceId))
                 .findFirst()
                 .orElseThrow(
-                        () -> new ServiceException(ErrorType.NOT_FOUND, MSG_USER_DOESNT_HAVE_WORKSPACE, telegramUserId, newWorkspaceName)
+                        () -> new ServiceException(ErrorType.NOT_FOUND, MSG_USER_DOESNT_HAVE_WORKSPACE, telegramUserId, newWorkspaceId)
                 );
 
-        user.setCurrentWorkspaceName(newWorkspaceName);
+        user.setCurrentWorkspace(newCurrentWorkspace);
         userRepository.save(user);
     }
 }

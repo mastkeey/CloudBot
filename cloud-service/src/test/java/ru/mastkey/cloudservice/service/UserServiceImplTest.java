@@ -20,6 +20,7 @@ import ru.mastkey.model.UserResponse;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,9 +82,9 @@ class UserServiceImplTest {
         assertThat(response).isNotNull();
         assertThat(createUserRequest.getTelegramUserId()).isEqualTo(response.getTelegramUserId());
         assertThat(createUserRequest.getChatId()).isEqualTo(response.getChatId());
-        verify(userRepository).save(user);
+        verify(userRepository, times(2)).save(user);
         verify(workspaceService)
-                .createWorkspace(user.getTelegramUserId(), createUserRequest.getUsername());
+                .createWorkspaceForNewUser(user, createUserRequest.getUsername());
     }
 
     @Test
@@ -103,33 +104,33 @@ class UserServiceImplTest {
     @Test
     void changeCurrentWorkspace_ShouldUpdateCurrentWorkspaceSuccessfully() {
         var telegramUserId = 12345L;
-        var newWorkspaceName = "newWorkspace";
+        var newWorkspaceId = UUID.randomUUID();
 
         var workspace = new Workspace();
-        workspace.setName(newWorkspaceName);
+        workspace.setId(newWorkspaceId);
 
         var user = new User();
         user.setTelegramUserId(telegramUserId);
         user.setWorkspaces(List.of(workspace));
 
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
 
-        userService.changeCurrentWorkspace(telegramUserId, newWorkspaceName);
+        userService.changeCurrentWorkspace(telegramUserId, newWorkspaceId);
 
-        assertThat(user.getCurrentWorkspaceName()).isEqualTo(newWorkspaceName);
+        assertThat(user.getCurrentWorkspace().getId()).isEqualTo(newWorkspaceId);
         verify(userRepository).save(user);
     }
 
     @Test
     void changeCurrentWorkspace_ShouldThrowNotFoundException_WhenUserDoesNotExist() {
         var telegramUserId = 12345L;
-        var newWorkspaceName = "nonExistentWorkspace";
+        var newWorkspaceId = UUID.randomUUID();
 
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.empty());
+        when(userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId)).thenReturn(Optional.empty());
 
         var exception = assertThrows(ServiceException.class,
-                () -> userService.changeCurrentWorkspace(telegramUserId, newWorkspaceName));
+                () -> userService.changeCurrentWorkspace(telegramUserId, newWorkspaceId));
 
         assertThat(ErrorType.NOT_FOUND.getCode()).isEqualTo(exception.getCode());
         assertThat("User with id %s not found".formatted(telegramUserId)).isEqualTo(exception.getMessage());
@@ -139,19 +140,19 @@ class UserServiceImplTest {
     @Test
     void changeCurrentWorkspace_ShouldThrowNotFoundException_WhenWorkspaceDoesNotExist() {
         var telegramUserId = 12345L;
-        var newWorkspaceName = "nonExistentWorkspace";
+        var newWorkspaceId = UUID.randomUUID();
 
         var user = new User();
         user.setTelegramUserId(telegramUserId);
         user.setWorkspaces(List.of());
 
-        when(userRepository.findByTelegramUserId(telegramUserId)).thenReturn(Optional.of(user));
+        when(userRepository.findByTelegramUserIdWithWorkspaces(telegramUserId)).thenReturn(Optional.of(user));
 
         var exception = assertThrows(ServiceException.class,
-                () -> userService.changeCurrentWorkspace(telegramUserId, newWorkspaceName));
+                () -> userService.changeCurrentWorkspace(telegramUserId, newWorkspaceId));
 
         assertThat(ErrorType.NOT_FOUND.getCode()).isEqualTo(exception.getCode());
-        assertThat("User with id 12345 does not have a Workspace named nonExistentWorkspace".formatted(telegramUserId, newWorkspaceName)).isEqualTo(exception.getMessage());
+        assertThat("User with id %s does not have a Workspace with id %s".formatted(telegramUserId, newWorkspaceId)).isEqualTo(exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
     }
 }

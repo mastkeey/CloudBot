@@ -13,6 +13,8 @@ import ru.mastkey.cloudservice.service.UserService;
 import ru.mastkey.model.CreateUserRequest;
 import ru.mastkey.model.UserResponse;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -69,15 +71,15 @@ class UserControllerTest {
     @Test
     void changeCurrentWorkspace_ShouldReturnOk() throws Exception {
         var telegramUserId = 12345L;
-        var newWorkspaceName = "newWorkspace";
+        var newWorkspaceId = UUID.randomUUID();
 
-        doNothing().when(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceName);
+        doNothing().when(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceId);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/{telegramUserId}/changeCurrentWorkspace", telegramUserId)
-                        .param("newWorkspaceName", newWorkspaceName))
+                        .param("newWorkspaceId", newWorkspaceId.toString()))
                 .andExpect(status().isOk());
 
-        verify(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceName);
+        verify(userService).changeCurrentWorkspace(telegramUserId, newWorkspaceId);
     }
 
     @Test

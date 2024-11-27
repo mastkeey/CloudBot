@@ -18,6 +18,5 @@ public interface CreateUserRequestToUserMapper extends Converter<CreateUserReque
     }
 
     @Override
-    @Mapping(target = "currentWorkspaceName", source = "username")
     User convert(CreateUserRequest source);
 }

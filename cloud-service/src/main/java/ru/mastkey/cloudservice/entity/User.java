@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,11 +37,12 @@ public class User {
     @Column(name = "bucket_name", nullable = false)
     private String bucketName;
 
-    @Column(name = "current_workspace_name")
-    private String currentWorkspaceName;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "current_workspace_id")
+    private Workspace currentWorkspace;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Workspace> workspaces;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Workspace> workspaces = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
